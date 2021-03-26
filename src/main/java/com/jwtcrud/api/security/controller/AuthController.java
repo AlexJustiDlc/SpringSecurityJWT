@@ -1,6 +1,7 @@
 package com.jwtcrud.api.security.controller;
 
 import com.jwtcrud.api.security.jwt.JwtProvider;
+import com.jwtcrud.api.security.model.Rol;
 import com.jwtcrud.api.security.model.Usuario;
 import com.jwtcrud.api.security.service.UsuarioService;
 import com.jwtcrud.api.security.util.JwtDto;
@@ -15,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Set;
 
 @CrossOrigin
 @RestController
@@ -30,12 +33,19 @@ public class AuthController {
     @Autowired
     private JwtProvider jwtProvider;
 
-    @PostMapping("/nuevo")
+    @PostMapping("/signin")
     public ResponseEntity<?> create(@RequestBody Usuario usuario){
         if (usuarioService.existsByUsername(usuario.getUsername()))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El Nombre de Usuario \""+usuario.getUsername()+"\" ya existe.");
         if (usuarioService.existsByCorreo(usuario.getCorreo()))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El Correo \""+usuario.getCorreo()+"\" ya existe.");
+
+        /* AGREGAR ROL "USER" */
+        Set<Rol> rol = new HashSet<>();
+        Rol rolU = new Rol();
+        rolU.setId(2);
+        rol.add(rolU);
+        usuario.setRoles(rol);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.create(usuario));
     }

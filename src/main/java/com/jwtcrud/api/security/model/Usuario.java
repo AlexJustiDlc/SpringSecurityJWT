@@ -26,11 +26,4 @@ public class Usuario {
 
     @ManyToMany
     private Set<Rol> roles;
-
-    public Usuario(String nombre, String correo, String username, String password) {
-        this.nombre = nombre;
-        this.correo = correo;
-        this.username = username;
-        this.password = password;
-    }
 }

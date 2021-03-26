@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +26,18 @@ public class JwtProvider {
 
     public String generateToken(Authentication authentication){
         UsuarioPrincipal usuarioPrincipal = (UsuarioPrincipal) authentication.getPrincipal();
-        List<String> roles = usuarioPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        List<String> authorities = usuarioPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        List<String> roles = new ArrayList<>();
+        for (String rols : authorities){
+            String rol = rols.substring(5).toLowerCase();
+            //System.out.println(rol);
+            roles.add(rol);
+        }
+        String rolesxcomas = String.join(", ", roles);
+
         return Jwts.builder()
                 .setSubject(usuarioPrincipal.getUsername())
-                .claim("roles", roles)
+                .claim("rol", rolesxcomas)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime()+ Constantes.EXPIRATION))
                 .signWith(SignatureAlgorithm.HS256, Constantes.YOUR_SECRET.getBytes())
@@ -39,10 +48,9 @@ public class JwtProvider {
         JWT jwt = JWTParser.parse(jwtDto.getToken());
         JWTClaimsSet claims = jwt.getJWTClaimsSet();
         String username = claims.getSubject();
-        List<String> roles = (List<String>) claims.getClaim("roles");
         return Jwts.builder()
                 .setSubject(username)
-                .claim("roles", roles)
+                .claim("rol", claims.getClaim("rol"))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime()+ Constantes.EXPIRATION * 2))
                 .signWith(SignatureAlgorithm.HS256, Constantes.YOUR_SECRET.getBytes())
